@@ -65,6 +65,148 @@ Jenkins环境的cpu性能、空间大小、网速等等都是基于自己的服�
 
 ## 使用Github Action打包发布一个vitepress生成的静态网页网站
 
+#### 准备博客项目
+
 vitepress官方文档：https://vitepress.dev/zh/guide/getting-started
 
 
+```bash
+
+npm init
+
+npm add -D vitepress
+
+npx vitepress init
+
+git init
+```
+
+然后添加.gitignore文件
+
+```
+.idea
+
+node_modules
+
+docs/.vitepress/cache
+docs/.vitepress/dist
+```
+
+配置docs/.vitepress/config.js的左侧导航：
+```js
+import { defineConfig } from 'vitepress'
+
+// https://vitepress.dev/reference/site-config
+export default defineConfig({
+  title: "架设个人网站",
+  description: "关于架设个人网站的一切...",
+  base: '/vite-press/', //发布的网站地址的项目根目录
+  themeConfig: {
+    // https://vitepress.dev/reference/default-theme-config
+/*    nav: [
+      { text: 'Home', link: '/' },
+      { text: 'Examples', link: '/markdown-examples' }
+    ],*/
+
+    sidebar: [
+      {
+        text: '作者序',
+        items: [
+          { text: '想法的由来', link: '/' },
+          { text: '关于此博客的搭建', link: '/about-vitepress-create' }
+        ]
+      },
+      {
+        text: '第一步：vue3的搭建',
+        items: [
+          { text: '起因：为了找工作', link: '/vue3/for-jobs' }
+        ]
+      }
+    ],
+
+/*    socialLinks: [
+      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+    ]*/
+  }
+})
+```
+
+上传到GitHub
+
+
+#### 配置GitHub action
+
+参考：https://vitepress.dev/zh/guide/deploy#github-pages
+
+```deploy.yml
+# 构建 VitePress 站点并将其部署到 GitHub Pages 的示例工作流程
+#
+name: Deploy VitePress site to Pages
+
+on:
+  # 在针对 `main` 分支的推送上运行。如果你
+  # 使用 `master` 分支作为默认分支，请将其更改为 `master`
+  push:
+    branches: [master]
+
+  # 允许你从 Actions 选项卡手动运行此工作流程
+  workflow_dispatch:
+
+# 设置 GITHUB_TOKEN 的权限，以允许部署到 GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 只允许同时进行一次部署，跳过正在运行和最新队列之间的运行队列
+# 但是，不要取消正在进行的运行，因为我们希望允许这些生产部署完成
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # 构建工作
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 如果未启用 lastUpdated，则不需要
+      - uses: pnpm/action-setup@v3 # 如果使用 pnpm，请取消注释
+        with:
+          version: 9
+      # - uses: oven-sh/setup-bun@v1 # 如果使用 Bun，请取消注释
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm # 或 npm / yarn
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Install dependencies
+        run: pnpm install # 或 npm ci / yarn install / bun install
+      - name: Build with VitePress
+        run: pnpm run docs:build # 或 npm run docs:build / yarn docs:build / bun run docs:build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/.vitepress/dist
+
+  # 部署工作
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+```
+
+可以看到，打包，发布，都成功了：
+![image.png](https://p0-xtjj-private.juejin.cn/tos-cn-i-73owjymdk6/e9ac8b4f22d44eceb69802fe62cf3539~tplv-73owjymdk6-watermark.image?policy=eyJ2bSI6MywidWlkIjoiMTIxODczMTUyMzcwNjAzOSJ9&rk3s=e9ecf3d6&x-orig-authkey=f32326d3454f2ac7e96d3d06cdbb035152127018&x-orig-expires=1722297063&x-orig-sign=adaVpfart%2Bh1TbmXoq49KSlt0dk%3D)
