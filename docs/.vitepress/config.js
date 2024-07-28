@@ -4,6 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "架设个人网站",
   description: "关于架设个人网站的一切...",
+  base: '/vite-press/',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
 /*    nav: [
