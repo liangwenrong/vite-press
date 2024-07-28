@@ -1,0 +1,106 @@
+# 使用GitHub Action自动发布博客
+
+> 假设已经准备好需要发布的vitepress
+
+参考：[vitepress各平台部署指南](https://vitepress.dev/zh/guide/deploy#platform-guides)
+
+
+```
+.
+├─ .github
+│  └─ workflows
+│    └─ deploy.yml
+│ 
+├─ docs
+
+```
+在项目的 .github/workflows 目录中创建一个名为 deploy.yml 的文件：
+
+```yaml
+# 构建 VitePress 站点并将其部署到 GitHub Pages 的示例工作流程
+#
+name: Deploy VitePress site to Pages
+
+on:
+  # 在针对 `main` 分支的推送上运行。如果你
+  # 使用 `master` 分支作为默认分支，请将其更改为 `master`
+  push:
+    branches: [master]
+
+  # 允许你从 Actions 选项卡手动运行此工作流程
+  workflow_dispatch:
+
+# 设置 GITHUB_TOKEN 的权限，以允许部署到 GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 只允许同时进行一次部署，跳过正在运行和最新队列之间的运行队列
+# 但是，不要取消正在进行的运行，因为我们希望允许这些生产部署完成
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  # 构建工作
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # 如果未启用 lastUpdated，则不需要
+      - uses: pnpm/action-setup@v3 # 如果使用 pnpm，请取消注释
+        with:
+          version: 9
+      # - uses: oven-sh/setup-bun@v1 # 如果使用 Bun，请取消注释
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm # 或 npm / yarn
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      - name: Install dependencies
+        run: pnpm install # 或 npm ci / yarn install / bun install
+      - name: Build with VitePress
+        run: pnpm run docs:build # 或 npm run docs:build / yarn docs:build / bun run docs:build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/.vitepress/dist
+
+  # 部署工作
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    name: Deploy
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+```
+
+::: warning
+
+你需要 在存储库settings中左侧导航的“Pages”菜单项下，勾选“Build and deployment > Source > GitHub Actions
+
+:::
+
+::: tip
+
+有关GitHub Action的详细说明不在本章节展开，请参考官方文档：[https://docs.github.com/zh/actions](https://docs.github.com/zh/actions)
+
+:::
+
+
+配置好后，把本项目代码push到GitHub远程仓库中
+
+点击存储库上面的Actions，即可看到当前所有的发布进度（以及失败日志）
+
+
