@@ -205,4 +205,4 @@ pnpm run build
 
 ### 三、使用GitHub Action自动发布博客
 
-请查看下一章：[使用GitHub Action发布博客](./deploy-by-github-action)
+请查看下一章：[使用GitHub Action发布博客](../autoDeploy/deploy-by-github-action)
