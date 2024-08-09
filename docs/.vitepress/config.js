@@ -21,6 +21,12 @@ export default defineConfig({
         ]
       },
       {
+        text: '自动化',
+        items: [
+          { text: 'Getting Started', link: '/autoDeploy/front-end-auto-deploy' }
+        ]
+      },
+      {
         text: '第一步：vue3的搭建',
         items: [
           { text: '起因：为了找工作', link: '/vue3/for-jobs' }
@@ -31,5 +37,14 @@ export default defineConfig({
 /*    socialLinks: [
       { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
     ]*/
+  },
+  markdown: {
+    container: {
+      tip: '提示',
+      warningLabel: '警告',
+      dangerLabel: '危险',
+      infoLabel: '信息',
+      detailsLabel: '详细信息'
+    }
   }
 })
