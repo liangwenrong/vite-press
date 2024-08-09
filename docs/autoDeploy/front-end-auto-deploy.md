@@ -1,7 +1,7 @@
 # Getting Started
 
 <audio id="vite-audio">
-  <source src="/vite.mp3" type="audio/mpeg">
+  <source src="https://vitejs.dev/vite.mp3" type="audio/mpeg">
 </audio>
 
 ## Overview
