@@ -9,7 +9,8 @@ export default [
   {
     text: '自动化',
     items: [
-      { text: '使用GitHub Action自动发布博客', link: '/autoDeploy/deploy-by-github-action' }
+      { text: '使用GitHub Action自动发布博客', link: '/autoDeploy/deploy-by-github-action' },
+      { text: '使用Jenkins自动打包发布springboot', link: '/autoDeploy/deploy-maven-by-Jenkins' }
     ]
   }
 ]
