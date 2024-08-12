@@ -21,7 +21,7 @@
 | 本地构建                                         | 远程构建                                   |
 |:---------------------------------------------|:---------------------------------------|
 | 在本地端build<br/>依赖本地构建环境                       | 在远程端build<br/>依赖远程构建环境                 |
-| 本地已产生可发布最种代码<br/>只需要把静态代码上传至指定服务器位置          | 本地只负责提交源码到git远程仓库<br/>服务器端需要从源码开始编译并发布 |
+| 本地已产生可发布最终代码<br/>只需要把静态代码上传至指定服务器位置          | 本地只负责提交源码到git远程仓库<br/>服务器端需要从源码开始编译并发布 |
 | 因此，在本地执行bat脚本完成构建和推送代码到git<br/>并由远程服务器拉取代码发布 | 因此，在远程服务器端监听git提交触发自动构建<br/>并发布             |
 
 ## 远程通过GitHub Action或者Jenkins部署（略）
@@ -61,15 +61,57 @@
 
 ### 第一步，提交审查通过的最终源码到git
 
-::: tip
+::: tip 发布前先`git commit`
 
 虽然本地构建可以不用提前提交git代码，但这绝对不是一个好习惯。
 
 发布记录最好跟代码提交记录关联，这个约定能够很好避免自己忘记打包发布了哪一个版本的代码。
 :::
 
-### 第二步，git push钩子触发本地bat脚本执行自动化构建和发布
+### 第二步，使用git push钩子触发本地bat脚本执行自动化构建和发布
 
+::: tip git client端 钩子：`pre-push`
+
+The pre-push hook runs during git push, after the remote refs have been updated 
+
+but before any objects have been transferred
+
+翻译：在git push执行时候，在完成传送文件之前，执行本钩子脚本
+
+实际上，git push会等待钩子执行完毕后，才完成推送代码（同步）
+:::
+
+`pre-push`会在每次git push的时候触发。
+
+::: info `pre-push`钩子用法
+
+在git项目下添加一个`.git\hooks\pre-push`文件，文件不需要后缀名
+
+写上需要执行的脚本内容，默认是`#!/bin/sh`脚本
+:::
+
+`pre-push`内容如下：
+
+```shell
+#!/bin/sh
+
+./upload-build.bat
+
+exit 0
+
+```
+::: tip
+
+`pre-push`在.git/hooks目录下
+
+但是`pre-push`的执行目录是在git push命令目录
+
+因此./upload-build.bat是执行git push当前目录下的`upload-build.bat`脚本（其他路径请对症修改）
+
+:::
+
+
+bat脚本`upload-build.bat`的内容请查看下一节内容 
 
 
 ### 第三步，bat脚本要做的事情
